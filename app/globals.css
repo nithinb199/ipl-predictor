@@ -227,6 +227,26 @@ select:disabled {
   max-width: 28rem;
 }
 
+.install-guide {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.install-guide strong {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.install-steps {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+}
+
 .streak-card,
 .goal-card,
 .winner-panel,

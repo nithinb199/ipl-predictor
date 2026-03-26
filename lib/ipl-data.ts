@@ -170,6 +170,16 @@ function deriveStatus(match: CricApiMatch) {
   return "Prediction window open";
 }
 
+function getMatchTimestamp(match: CricApiMatch) {
+  const rawValue = match.dateTimeGMT ?? match.dateTime ?? match.date;
+  if (!rawValue) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const timestamp = new Date(rawValue).getTime();
+  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+}
+
 function mapMatch(match: CricApiMatch, index: number): MatchCard | null {
   const teamInfo = match.teamInfo?.length
     ? match.teamInfo
@@ -230,6 +240,7 @@ export async function getIplMatches(): Promise<IplMatchesResult> {
     const rawMatches = payload.data ?? [];
     const iplMatches = rawMatches
       .filter((match) => IPL_PATTERN.test(match.series ?? "") || IPL_PATTERN.test(match.name ?? ""))
+      .sort((left, right) => getMatchTimestamp(right) - getMatchTimestamp(left))
       .map(mapMatch)
       .filter((match): match is MatchCard => Boolean(match));
 

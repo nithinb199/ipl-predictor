@@ -51,6 +51,8 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [installHint, setInstallHint] = useState("");
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isIos, setIsIos] = useState(false);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const matchListRef = useRef<HTMLElement | null>(null);
 
   const urgentMatches = useMemo(
@@ -65,10 +67,11 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
 
   useEffect(() => {
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIos = /iphone|ipad|ipod/.test(userAgent);
+    const nextIsIos = /iphone|ipad|ipod/.test(userAgent);
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 
+    setIsIos(nextIsIos);
     setIsStandalone(standalone);
 
     if (standalone) {
@@ -76,8 +79,8 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
       return;
     }
 
-    if (isIos) {
-      setInstallHint("On iPhone: Share → Add to Home Screen");
+    if (nextIsIos) {
+      setInstallHint("Tap for iPhone install steps");
       return;
     }
 
@@ -111,11 +114,19 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
   async function handleInstallApp() {
     if (isStandalone) {
       setInstallHint("Already added to home screen");
+      setShowInstallGuide(false);
+      return;
+    }
+
+    if (isIos) {
+      setShowInstallGuide((current) => !current);
+      setInstallHint("Use Safari Share to add the shortcut");
       return;
     }
 
     if (!installPrompt) {
-      setInstallHint("On iPhone: Share → Add to Home Screen");
+      setShowInstallGuide(true);
+      setInstallHint("Install is not available in this browser yet");
       return;
     }
 
@@ -129,6 +140,7 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
     }
 
     setInstallPrompt(null);
+    setShowInstallGuide(false);
   }
 
   function handleWinnerSelect(matchId: string, teamShort: string) {
@@ -209,6 +221,22 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
             Add to Home Screen
           </button>
           <p className="helper-copy install-copy">{installHint}</p>
+          {showInstallGuide ? (
+            <div className="install-guide">
+              <strong>{isIos ? "Add on iPhone" : "Install help"}</strong>
+              {isIos ? (
+                <ol className="install-steps">
+                  <li>Tap the Share button in Safari.</li>
+                  <li>Scroll down and tap Add to Home Screen.</li>
+                  <li>Tap Add to save IPL Predictor on your home screen.</li>
+                </ol>
+              ) : (
+                <p className="helper-copy">
+                  This browser has not exposed the install prompt yet. Try Chrome or Edge on Android for one-tap install.
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
       </section>
 

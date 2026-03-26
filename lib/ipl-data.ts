@@ -240,7 +240,7 @@ export async function getIplMatches(): Promise<IplMatchesResult> {
     const rawMatches = payload.data ?? [];
     const iplMatches = rawMatches
       .filter((match) => IPL_PATTERN.test(match.series ?? "") || IPL_PATTERN.test(match.name ?? ""))
-      .sort((left, right) => getMatchTimestamp(right) - getMatchTimestamp(left))
+      .sort((left, right) => getMatchTimestamp(left) - getMatchTimestamp(right))
       .map(mapMatch)
       .filter((match): match is MatchCard => Boolean(match));
 

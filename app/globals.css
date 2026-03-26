@@ -271,6 +271,10 @@ select:disabled {
   gap: 18px;
 }
 
+.auth-card {
+  margin-top: 0;
+}
+
 .field span {
   font-size: 0.85rem;
   color: var(--muted);
@@ -479,6 +483,11 @@ select:disabled {
   border-color: rgba(97, 165, 255, 0.3);
 }
 
+.selected-chip {
+  border-color: rgba(97, 165, 255, 0.58);
+  box-shadow: 0 0 0 1px rgba(97, 165, 255, 0.2), 0 12px 28px rgba(59, 130, 246, 0.18);
+}
+
 .inline-boost {
   margin-top: 14px;
   padding-top: 14px;
@@ -620,6 +629,10 @@ select:disabled {
 .sub-panels {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 14px;
+}
+
+.sub-panels.single-panel {
+  grid-template-columns: 1fr;
 }
 
 .mini-panel,

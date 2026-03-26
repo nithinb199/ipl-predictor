@@ -3,7 +3,13 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Inside Pitch",
-  description: "A mobile-first IPL prediction game for office bragging rights."
+  description: "A mobile-first IPL prediction game for office bragging rights.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "IPL Predictor"
+  }
 };
 
 export default function RootLayout({

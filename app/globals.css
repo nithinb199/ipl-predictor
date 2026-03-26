@@ -222,6 +222,11 @@ select:disabled {
   align-content: start;
 }
 
+.install-copy {
+  margin: 0;
+  max-width: 28rem;
+}
+
 .streak-card,
 .goal-card,
 .winner-panel,

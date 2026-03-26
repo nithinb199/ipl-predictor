@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { MatchCard, PowerUp } from "../../lib/data";
 
 type HomeClientProps = {
@@ -17,6 +17,11 @@ const confidenceOptions = [
 ] as const;
 
 const bonusOptions = ["10-20 runs", "21-35 runs", "Toss winner", "Win by wickets"];
+
+type BeforeInstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+};
 
 type InteractiveMatch = MatchCard & {
   confidence: string;
@@ -43,6 +48,9 @@ function nextStatus(teamShort: string, confidence: string, powerUp: string | nul
 export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClientProps) {
   const [joinMessage, setJoinMessage] = useState("Invite code ready. Join the office league in one tap.");
   const [matchState, setMatchState] = useState(() => matches.map(buildInteractiveMatch));
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installHint, setInstallHint] = useState("");
+  const [isStandalone, setIsStandalone] = useState(false);
   const matchListRef = useRef<HTMLElement | null>(null);
 
   const urgentMatches = useMemo(
@@ -55,6 +63,39 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
     return `${Math.max(1, lockedCount)} locked today`;
   }, [matchState]);
 
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(userAgent);
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+    setIsStandalone(standalone);
+
+    if (standalone) {
+      setInstallHint("Added to home screen");
+      return;
+    }
+
+    if (isIos) {
+      setInstallHint("On iPhone: Share → Add to Home Screen");
+      return;
+    }
+
+    setInstallHint("Install for one-tap access from your home screen");
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+      setInstallHint("Install app shortcut");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
   function updateMatch(matchId: string, updater: (match: InteractiveMatch) => InteractiveMatch) {
     setMatchState((current) => current.map((match) => (match.id === matchId ? updater(match) : match)));
   }
@@ -65,6 +106,29 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
 
   function handleJoinLeague() {
     setJoinMessage("League joined. Your picks will count on the office board.");
+  }
+
+  async function handleInstallApp() {
+    if (isStandalone) {
+      setInstallHint("Already added to home screen");
+      return;
+    }
+
+    if (!installPrompt) {
+      setInstallHint("On iPhone: Share → Add to Home Screen");
+      return;
+    }
+
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      setInstallHint("Shortcut added to home screen");
+    } else {
+      setInstallHint("Install dismissed for now");
+    }
+
+    setInstallPrompt(null);
   }
 
   function handleWinnerSelect(matchId: string, teamShort: string) {
@@ -141,6 +205,10 @@ export function HomeClient({ matches, sourceLabel, isLive, powerUps }: HomeClien
           <button className="primary-button" type="button" onClick={handlePredictNow}>
             Jump to Matches
           </button>
+          <button className="secondary-button" type="button" onClick={handleInstallApp}>
+            Add to Home Screen
+          </button>
+          <p className="helper-copy install-copy">{installHint}</p>
         </div>
       </section>
 

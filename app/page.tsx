@@ -1,14 +1,6 @@
 import Link from "next/link";
 import { auth, googleAuthConfigured } from "../auth";
-import {
-  homeEvents,
-  leaderboard,
-  notifications,
-  powerUps,
-  profileBadges,
-  teamBattle,
-  weeklyLeaders
-} from "../lib/data";
+import { powerUps } from "../lib/data";
 import { getIplMatches } from "../lib/ipl-data";
 import { signInWithGoogle, signOutUser } from "./actions/auth";
 import { HomeClient } from "./components/home-client";
@@ -67,12 +59,6 @@ export default async function Home() {
           matches={matches}
           sourceLabel={sourceLabel}
           isLive={isLive}
-          leaderboard={leaderboard}
-          teamBattle={teamBattle}
-          weeklyLeaders={weeklyLeaders}
-          homeEvents={homeEvents}
-          notifications={notifications}
-          profileBadges={profileBadges}
           powerUps={powerUps}
         />
       </div>
